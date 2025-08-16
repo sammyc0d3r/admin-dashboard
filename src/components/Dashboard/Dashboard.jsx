@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -43,7 +43,7 @@ const Dashboard = () => {
   const [dashboardStats, setDashboardStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchDashboardStats = async () => {
+  const fetchDashboardStats = useCallback(async () => {
     try {
       const token = localStorage.getItem('adminToken');
       const tokenType = localStorage.getItem('tokenType');
@@ -75,14 +75,14 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const fetchAdminProfile = async () => {
       try {
         const token = localStorage.getItem('adminToken');
         const tokenType = localStorage.getItem('tokenType');
-        
+
         if (!token || !tokenType) {
           throw new Error('No authentication token found');
         }
@@ -112,18 +112,18 @@ const Dashboard = () => {
 
     fetchAdminProfile();
     fetchDashboardStats();
-  }, []);
+  }, [fetchDashboardStats, handleLogout]);
 
   const handleLogoutClick = () => {
     setLogoutDialogOpen(true);
   };
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('tokenType');
     localStorage.removeItem('isAuthenticated');
     navigate('/');
-  };
+  }, [navigate]);
 
   const handleLogoutConfirm = () => {
     setLogoutDialogOpen(false);

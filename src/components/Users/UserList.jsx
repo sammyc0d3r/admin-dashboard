@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Table,
@@ -9,7 +9,6 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Typography,
   TablePagination,
   Button,
   Dialog,
@@ -42,7 +41,7 @@ const UserList = () => {
     setSuccessMessage(null);
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       const token = localStorage.getItem('adminToken');
       const tokenType = localStorage.getItem('tokenType');
@@ -75,11 +74,11 @@ const UserList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, rowsPerPage]);
 
   useEffect(() => {
     fetchUsers();
-  }, [page, rowsPerPage]);
+  }, [fetchUsers]);
 
   const handleChangePage = (event, newPage) => {
     clearMessages();

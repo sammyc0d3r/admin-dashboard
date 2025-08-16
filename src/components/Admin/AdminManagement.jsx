@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -49,7 +49,7 @@ const AdminManagement = () => {
     role: 'viewer' // Default role
   });
 
-  const fetchAdmins = async () => {
+  const fetchAdmins = useCallback(async () => {
     try {
       const token = localStorage.getItem('adminToken');
       const tokenType = localStorage.getItem('tokenType');
@@ -133,7 +133,7 @@ const AdminManagement = () => {
       setError(errorMessage);
       setLoading(false);
     }
-  };
+  }, [page, rowsPerPage]);
 
   useEffect(() => {
     // Get user role from token when component mounts
@@ -147,7 +147,7 @@ const AdminManagement = () => {
       console.error('Error getting user role:', error);
     }
     fetchAdmins();
-  }, [page, rowsPerPage]);
+  }, [fetchAdmins]);
 
   const handleCreateAdmin = async () => {
     try {
@@ -171,7 +171,7 @@ const AdminManagement = () => {
 
       setSuccessMessage('Admin created successfully');
       setCreateDialogOpen(false);
-      setNewAdmin({ username: '', password: '', role: 'admin' });
+      setNewAdmin({ username: '', password: '', role: 'viewer' });
       fetchAdmins();
     } catch (err) {
       setError(err.message);
