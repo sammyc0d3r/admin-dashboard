@@ -1,0 +1,150 @@
+import React, { useState } from 'react';
+import { 
+  Box, 
+  Container, 
+  TextField, 
+  Button, 
+  Typography, 
+  Paper,
+  Alert,
+  CircularProgress
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+
+const API_URL = 'https://api.smartcareerassistant.online';
+
+const Login = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const formData = new URLSearchParams();
+      formData.append('username', username);
+      formData.append('password', password);
+      formData.append('grant_type', 'password');
+      formData.append('scope', '');
+      formData.append('client_id', 'string');
+      formData.append('client_secret', 'string');
+
+      const response = await fetch(`${API_URL}/auth/admin/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'accept': 'application/json'
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Login failed');
+      }
+
+      console.log('Login response:', data);
+      console.log('Token from response:', data.access_token);
+      console.log('Token type from response:', data.token_type);
+      
+      // Store tokens
+      localStorage.setItem('adminToken', data.access_token);
+      localStorage.setItem('tokenType', 'Bearer'); // Always use Bearer
+      localStorage.setItem('isAuthenticated', 'true');
+      
+      // Verify storage
+      console.log('Stored token:', localStorage.getItem('adminToken'));
+      console.log('Stored token type:', localStorage.getItem('tokenType'));
+      
+      // Log full auth header that will be used
+      console.log('Auth header will be:', `Bearer ${data.access_token}`);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message || 'Failed to login. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Paper
+          elevation={3}
+          sx={{
+            padding: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            backgroundColor: 'white',
+            borderRadius: 2,
+            width: '100%',
+          }}
+        >
+          <Typography component="h1" variant="h5" sx={{ color: '#1976d2', mb: 3 }}>
+            Smart Career Assistant
+          </Typography>
+          <Typography component="h2" variant="h6" sx={{ mb: 3 }}>
+            Admin Login
+          </Typography>
+          {error && (
+            <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Box component="form" onSubmit={handleLogin} sx={{ mt: 1, width: '100%' }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
+              autoFocus
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={loading}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2, bgcolor: '#1976d2' }}
+              disabled={loading}
+            >
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+            </Button>
+          </Box>
+        </Paper>
+      </Box>
+    </Container>
+  );
+};
+
+export default Login;
