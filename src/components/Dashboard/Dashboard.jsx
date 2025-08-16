@@ -35,8 +35,8 @@ import { useNavigate } from 'react-router-dom';
 import UserList from '../Users/UserList';
 import AdminManagement from '../Admin/AdminManagement';
 import { ColorModeContext } from '../../ColorModeContext';
-
-const API_URL = 'https://api.smartcareerassistant.online';
+import { AuthContext } from '../../context/AuthContext';
+import { apiFetch } from '../../utils/api';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -49,42 +49,20 @@ const Dashboard = () => {
   const theme = useTheme();
   const colorMode = useContext(ColorModeContext);
 
+  const { logout } = useContext(AuthContext);
+
   const handleLogout = useCallback(() => {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('tokenType');
-    localStorage.removeItem('isAuthenticated');
+    logout();
     navigate('/');
-  }, [navigate]);
+  }, [logout, navigate]);
 
   const fetchDashboardStats = useCallback(async () => {
     try {
-      const token = localStorage.getItem('adminToken');
-      const tokenType = localStorage.getItem('tokenType');
-      
-      console.log('Dashboard - Token:', token);
-      console.log('Dashboard - Token Type:', tokenType);
-      
-      if (!token || !tokenType) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await fetch('https://api.smartcareerassistant.online/auth/admin/dashboard', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'accept': 'application/json'
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch dashboard statistics');
-      }
-
-      const data = await response.json();
+      const data = await apiFetch('/auth/admin/dashboard');
       setDashboardStats(data);
       setError(null);
     } catch (err) {
       setError(err.message);
-      console.error('Error fetching dashboard stats:', err);
     } finally {
       setLoading(false);
     }
@@ -93,31 +71,11 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchAdminProfile = async () => {
       try {
-        const token = localStorage.getItem('adminToken');
-        const tokenType = localStorage.getItem('tokenType');
-
-        if (!token || !tokenType) {
-          throw new Error('No authentication token found');
-        }
-
-        const response = await fetch(`${API_URL}/auth/admin/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'accept': 'application/json'
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch admin profile');
-        }
-
-        const data = await response.json();
+        const data = await apiFetch('/auth/admin/me');
         setAdminProfile(data);
       } catch (err) {
         setError(err.message);
-        console.error('Error fetching admin profile:', err);
-        // If unauthorized, redirect to login
-        if (err.message.includes('No authentication token')) {
+        if (err.message.toLowerCase().includes('authentication')) {
           handleLogout();
         }
       }
@@ -320,7 +278,7 @@ const Dashboard = () => {
                     <Paper sx={{ p: 2 }} elevation={3}>
                       <Typography variant="h6" gutterBottom>Top Fields</Typography>
                       <List>
-                        {dashboardStats.top_fields.slice(0, 3).map((field, index) => (
+                        {(dashboardStats?.top_fields ?? []).slice(0, 3).map((field, index) => (
                           <ListItem key={index}>
                             <ListItemText
                               primary={field.field_name}
@@ -339,12 +297,12 @@ const Dashboard = () => {
                   </Grid>
 
                   {/* Recent Errors */}
-                  {dashboardStats.recent_errors.length > 0 && (
+                  {(dashboardStats?.recent_errors ?? []).length > 0 && (
                     <Grid item xs={12}>
                       <Paper sx={{ p: 2 }} elevation={3}>
                         <Typography variant="h6" gutterBottom>Recent Errors</Typography>
                         <List>
-                          {dashboardStats.recent_errors.map((error, index) => (
+                          {recentErrors.map((error, index) => (
                             <ListItem key={index}>
                               <Alert severity="error" sx={{ width: '100%' }}>
                                 {error}

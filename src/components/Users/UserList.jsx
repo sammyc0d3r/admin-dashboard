@@ -23,7 +23,7 @@ import {
   Delete as DeleteIcon,
 } from '@mui/icons-material';
 
-const API_URL = 'https://api.smartcareerassistant.online';
+import { apiFetch } from '../../utils/api';
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -43,34 +43,12 @@ const UserList = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const token = localStorage.getItem('adminToken');
-      const tokenType = localStorage.getItem('tokenType');
-      
-      if (!token || !tokenType) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await fetch(
-        `${API_URL}/auth/admin/users?page=${page + 1}&size=${rowsPerPage}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
-
-      const data = await response.json();
+      const data = await apiFetch(`/auth/admin/users?page=${page + 1}&size=${rowsPerPage}`);
       setUsers(data.users);
       setTotalUsers(data.total);
       setError(null);
     } catch (err) {
       setError(err.message);
-      console.error('Error fetching users:', err);
     } finally {
       setLoading(false);
     }
@@ -114,32 +92,12 @@ const UserList = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('adminToken');
-      
-      const response = await fetch(
-        `${API_URL}/auth/admin/users/${userToDelete.id}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (response.status === 204) {
-        setSuccessMessage(`User ${userToDelete.username} has been successfully deleted`);
-        fetchUsers(); // Refresh the list
-      } else {
-        const errorData = await response.json();
-        if (response.status === 500 && errorData.detail?.includes('violates not-null constraint')) {
-          throw new Error('Cannot delete user because they have CV analyses. Please delete their analyses first.');
-        } else {
-          throw new Error(errorData.detail || 'Failed to delete user');
-        }
-      }
+      await apiFetch(`/auth/admin/users/${userToDelete.id}`, {
+        method: 'DELETE',
+      });
+      setSuccessMessage(`User ${userToDelete.username} has been successfully deleted`);
+      fetchUsers();
     } catch (error) {
-      console.error('Error deleting user:', error);
       setError(error.message);
     } finally {
       setLoading(false);
