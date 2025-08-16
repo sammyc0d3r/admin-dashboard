@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Container, 
-  TextField, 
-  Button, 
-  Typography, 
+import {
+  Box,
+  Container,
+  TextField,
+  Button,
+  Typography,
   Paper,
   Alert,
   CircularProgress
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 
 import { apiFetch } from '../../utils/api';
@@ -54,6 +55,8 @@ const Login = () => {
     }
   };
 
+  const theme = useTheme();
+
   return (
     <Box
       sx={{
@@ -61,7 +64,10 @@ const Login = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+        background:
+          theme.palette.mode === 'light'
+            ? 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)'
+            : theme.palette.background.default,
         p: 2,
       }}
     >
@@ -73,7 +79,8 @@ const Login = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            backgroundColor: 'white',
+            backgroundColor: theme.palette.background.paper,
+            color: theme.palette.text.primary,
             borderRadius: 2,
             width: '100%',
             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
