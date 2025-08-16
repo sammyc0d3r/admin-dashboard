@@ -1,12 +1,32 @@
-# React + Vite
+# Admin Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A minimal admin dashboard built with [React](https://react.dev/) and [Vite](https://vitejs.dev/). It includes a login view and basic dashboard layout using Material UI.
 
-Currently, two official plugins are available:
+## Getting Started
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Install dependencies and start the development server:
 
-## Expanding the ESLint configuration
+```bash
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The app will run at http://localhost:5173.
+
+## Scripts
+
+- `npm run dev` – Start the Vite dev server with hot module replacement.
+- `npm run build` – Build the app for production.
+- `npm run preview` – Preview the production build locally.
+- `npm run lint` – Lint the project with ESLint.
+
+## Project Structure
+
+- `src/` – Application source code.
+- `public/` – Static assets.
+- `index.html` – HTML entry point.
+
+## Contributing
+
+Pull requests are welcome. Please run `npm run lint` before submitting.
+

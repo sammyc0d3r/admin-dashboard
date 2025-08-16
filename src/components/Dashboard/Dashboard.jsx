@@ -118,11 +118,16 @@ const Dashboard = () => {
     setLogoutDialogOpen(true);
   };
 
-  const handleLogoutConfirm = () => {
+  const handleLogout = () => {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('tokenType');
     localStorage.removeItem('isAuthenticated');
     navigate('/');
+  };
+
+  const handleLogoutConfirm = () => {
+    setLogoutDialogOpen(false);
+    handleLogout();
   };
 
   const handleLogoutCancel = () => {
