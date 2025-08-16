@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import {
   Box,
   Container,
@@ -20,6 +20,7 @@ import {
   Button,
   Alert,
   CircularProgress,
+  useTheme,
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -27,10 +28,13 @@ import {
   WorkHistory as WorkHistoryIcon,
   ExitToApp as ExitToAppIcon,
   Group as GroupIcon,
+  Brightness4 as Brightness4Icon,
+  Brightness7 as Brightness7Icon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import UserList from '../Users/UserList';
 import AdminManagement from '../Admin/AdminManagement';
+import { ColorModeContext } from '../../ColorModeContext';
 
 const API_URL = 'https://api.smartcareerassistant.online';
 
@@ -42,6 +46,8 @@ const Dashboard = () => {
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
   const [dashboardStats, setDashboardStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const theme = useTheme();
+  const colorMode = useContext(ColorModeContext);
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('adminToken');
@@ -166,6 +172,14 @@ const Dashboard = () => {
               </Typography>
             )}
           </Typography>
+          <IconButton
+            color="inherit"
+            onClick={colorMode.toggleColorMode}
+            sx={{ mr: 1 }}
+            aria-label="toggle dark mode"
+          >
+            {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
           <IconButton color="inherit" onClick={handleLogoutClick}>
             <ExitToAppIcon />
           </IconButton>
