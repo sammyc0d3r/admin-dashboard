@@ -43,6 +43,13 @@ const Dashboard = () => {
   const [dashboardStats, setDashboardStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('tokenType');
+    localStorage.removeItem('isAuthenticated');
+    navigate('/');
+  }, [navigate]);
+
   const fetchDashboardStats = useCallback(async () => {
     try {
       const token = localStorage.getItem('adminToken');
@@ -117,13 +124,6 @@ const Dashboard = () => {
   const handleLogoutClick = () => {
     setLogoutDialogOpen(true);
   };
-
-  const handleLogout = useCallback(() => {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('tokenType');
-    localStorage.removeItem('isAuthenticated');
-    navigate('/');
-  }, [navigate]);
 
   const handleLogoutConfirm = () => {
     setLogoutDialogOpen(false);
