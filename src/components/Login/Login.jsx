@@ -11,7 +11,9 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
-const API_URL = 'https://api.smartcareerassistant.online';
+import { apiFetch } from '../../utils/api';
+import { useContext } from 'react';
+import { AuthContext } from '../../context/AuthContext';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -19,6 +21,8 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const { login } = useContext(AuthContext);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -34,36 +38,14 @@ const Login = () => {
       formData.append('client_id', 'string');
       formData.append('client_secret', 'string');
 
-      const response = await fetch(`${API_URL}/auth/admin/login`, {
+      const data = await apiFetch('/auth/admin/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'accept': 'application/json'
         },
-        body: formData
+        body: formData,
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.detail || 'Login failed');
-      }
-
-      console.log('Login response:', data);
-      console.log('Token from response:', data.access_token);
-      console.log('Token type from response:', data.token_type);
-      
-      // Store tokens
-      localStorage.setItem('adminToken', data.access_token);
-      localStorage.setItem('tokenType', 'Bearer'); // Always use Bearer
-      localStorage.setItem('isAuthenticated', 'true');
-      
-      // Verify storage
-      console.log('Stored token:', localStorage.getItem('adminToken'));
-      console.log('Stored token type:', localStorage.getItem('tokenType'));
-      
-      // Log full auth header that will be used
-      console.log('Auth header will be:', `Bearer ${data.access_token}`);
+      login(data.access_token);
       navigate('/dashboard');
     } catch (err) {
       setError(err.message || 'Failed to login. Please try again.');

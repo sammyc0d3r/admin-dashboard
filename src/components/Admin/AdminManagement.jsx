@@ -29,7 +29,8 @@ import {
   Add as AddIcon
 } from '@mui/icons-material';
 
-const API_URL = 'https://api.smartcareerassistant.online';
+import { apiFetch } from '../../utils/api';
+
 
 const AdminManagement = () => {
   const [admins, setAdmins] = useState([]);
@@ -52,130 +53,46 @@ const AdminManagement = () => {
   const fetchAdmins = useCallback(async () => {
     try {
       const token = localStorage.getItem('adminToken');
-      const tokenType = localStorage.getItem('tokenType');
-      
-      // Log request details
-      const requestUrl = `${API_URL}/auth/admin/list?page=${page + 1}&size=${rowsPerPage}`;
-      const authHeader = `Bearer ${token}`;
-      
-      console.log('Making request to:', requestUrl);
-      console.log('Full request headers:', {
-        'Authorization': authHeader,
-        'Content-Type': 'application/json'
-      });
-      
-      // Parse the token to see what's in it
-      try {
-        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-        console.log('Token payload:', tokenPayload);
-      } catch (e) {
-        console.log('Could not parse token:', e);
-      }
-      
-      if (!token || !tokenType) {
-        throw new Error('No authentication token found');
-      }
-
-      const response = await fetch(`${API_URL}/auth/admin/list?page=${page + 1}&size=${rowsPerPage}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        mode: 'cors',
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        console.log('Response status:', response.status);
-        console.log('Response headers:', Object.fromEntries(response.headers));
-        console.log('Full error data:', JSON.stringify(errorData, null, 2));
-        
-        if (response.status === 422) {
-          const errorDetail = typeof errorData?.detail === 'object' 
-            ? JSON.stringify(errorData.detail) 
-            : errorData?.detail;
-          throw new Error(`Authentication error: ${errorDetail || 'Token is missing or invalid'}`);
+      if (token) {
+        try {
+          const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+          setUserRole(tokenPayload.role);
+        } catch {
+          setUserRole(null);
         }
-        throw new Error(errorData?.detail || 'Failed to fetch admins');
       }
 
-      const data = await response.json();
-      console.log('Admin response:', data);
-      
+      const data = await apiFetch(`/auth/admin/list?page=${page + 1}&size=${rowsPerPage}`);
       if (data && Array.isArray(data.admins)) {
         setAdmins(data.admins);
         setTotalAdmins(data.total || data.admins.length);
         setError(null);
       } else {
-        console.error('Unexpected response format:', data);
         throw new Error('Invalid response format');
       }
-      setLoading(false);
     } catch (err) {
-      console.error('Error fetching admins:', err);
-      console.error('Error details:', {
-        message: err.message,
-        status: err.status,
-        statusText: err.statusText,
-        type: err.type
-      });
-      
-      let errorMessage = 'Failed to fetch admin list';
-      if (err.message.includes('CORS')) {
-        errorMessage = 'CORS error: Please ensure the API server is configured to accept requests from this origin';
-      } else if (err.message.includes('Failed to fetch')) {
-        errorMessage = 'Network error: Please check if the API server is running';
-      }
-      
-      setError(errorMessage);
+      setError(err.message);
+    } finally {
       setLoading(false);
     }
   }, [page, rowsPerPage]);
 
   useEffect(() => {
-    // Get user role from token when component mounts
-    try {
-      const token = localStorage.getItem('adminToken');
-      if (token) {
-        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-        setUserRole(tokenPayload.role);
-      }
-    } catch (error) {
-      console.error('Error getting user role:', error);
-    }
     fetchAdmins();
   }, [fetchAdmins]);
 
   const handleCreateAdmin = async () => {
     try {
-      const token = localStorage.getItem('adminToken');
-      const tokenType = localStorage.getItem('tokenType');
-
-      const response = await fetch(`${API_URL}/auth/admin/create`, {
+      await apiFetch('/auth/admin/create', {
         method: 'POST',
-        headers: {
-          'Authorization': `${tokenType} ${token}`,
-          'Content-Type': 'application/json',
-          'accept': 'application/json'
-        },
-        body: JSON.stringify(newAdmin)
+        body: JSON.stringify(newAdmin),
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.detail || 'Failed to create admin');
-      }
-
       setSuccessMessage('Admin created successfully');
       setCreateDialogOpen(false);
       setNewAdmin({ username: '', password: '', role: 'viewer' });
       fetchAdmins();
     } catch (err) {
       setError(err.message);
-      console.error('Error creating admin:', err);
     }
   };
 
@@ -199,8 +116,7 @@ const AdminManagement = () => {
       
       setAdminToDelete(admin);
       setDeleteDialogOpen(true);
-    } catch (error) {
-      console.error('Error checking permissions:', error);
+    } catch {
       setError('Failed to validate permissions');
     }
   };
@@ -212,38 +128,14 @@ const AdminManagement = () => {
     }
 
     try {
-      const token = localStorage.getItem('adminToken');
-      
-      const response = await fetch(`${API_URL}/auth/admin/${adminToDelete.id}`, {
+      const deletedAdmin = await apiFetch(`/auth/admin/${adminToDelete.id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        if (response.status === 403) {
-          throw new Error('Only super admins can delete other admins');
-        } else if (response.status === 400) {
-          throw new Error('You cannot delete your own account');
-        } else if (response.status === 404) {
-          throw new Error('Admin not found');
-        } else {
-          throw new Error(errorData.detail || 'Failed to delete admin');
-        }
-      }
-
-      const deletedAdmin = await response.json();
-      console.log('Deleted admin:', deletedAdmin);
-      
       setDeleteDialogOpen(false);
-      setSuccessMessage(`Admin ${deletedAdmin.username} deleted successfully`);
+      setSuccessMessage(`Admin ${deletedAdmin?.username || ''} deleted successfully`);
       setAdminToDelete(null);
-      fetchAdmins(); // Refresh the list
+      fetchAdmins();
     } catch (error) {
-      console.error('Error deleting admin:', error);
       setError(error.message);
     }
   };
