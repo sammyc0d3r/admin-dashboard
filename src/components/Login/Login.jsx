@@ -73,25 +73,28 @@ const Login = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+        p: 2,
+      }}
+    >
+      <Container component="main" maxWidth="xs">
         <Paper
-          elevation={3}
+          elevation={6}
           sx={{
-            padding: 4,
+            p: 4,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             backgroundColor: 'white',
             borderRadius: 2,
             width: '100%',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           }}
         >
           <Typography component="h1" variant="h5" sx={{ color: '#1976d2', mb: 3 }}>
@@ -135,15 +138,21 @@ const Login = () => {
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2, bgcolor: '#1976d2' }}
+              sx={{
+                mt: 3,
+                mb: 2,
+                bgcolor: '#1976d2',
+                textTransform: 'none',
+                '&:hover': { bgcolor: '#1565c0' },
+              }}
               disabled={loading}
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
             </Button>
           </Box>
         </Paper>
-      </Box>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 
