@@ -117,7 +117,7 @@ const UserList = () => {
   return (
     <>
       <Paper sx={{ width: '100%', mb: 2, mt: 2 }}>
-        <TableContainer>
+        <TableContainer sx={{ overflowX: 'auto' }}>
           {error && (
             <Alert severity="error" sx={{ m: 2 }}>
               {error}

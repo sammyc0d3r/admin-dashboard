@@ -173,7 +173,7 @@ const AdminManagement = () => {
               </Box>
             )}
 
-            <TableContainer>
+            <TableContainer sx={{ overflowX: 'auto' }}>
               <Table>
                 <TableHead>
                   <TableRow>

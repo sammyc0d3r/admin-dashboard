@@ -21,6 +21,7 @@ import {
   Alert,
   CircularProgress,
   useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -47,6 +48,7 @@ const Dashboard = () => {
   const [dashboardStats, setDashboardStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const colorMode = useContext(ColorModeContext);
 
   const { logout } = useContext(AuthContext);
@@ -121,15 +123,17 @@ const Dashboard = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ bgcolor: '#1976d2' }}>
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Smart Career Assistant - Admin Dashboard
+        <Toolbar sx={{ flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+          <Box sx={{ flexGrow: 1, textAlign: isMobile ? 'center' : 'left' }}>
+            <Typography variant={isMobile ? 'body1' : 'h6'} component="div">
+              {isMobile ? 'Admin Dashboard' : 'Smart Career Assistant - Admin Dashboard'}
+            </Typography>
             {adminProfile && (
               <Typography variant="subtitle2" component="div">
                 Welcome, {adminProfile.username}
               </Typography>
             )}
-          </Typography>
+          </Box>
           <IconButton
             color="inherit"
             onClick={colorMode.toggleColorMode}
@@ -176,6 +180,9 @@ const Dashboard = () => {
               value={currentTab}
               onChange={(e, newValue) => setCurrentTab(newValue)}
               sx={{ mb: 3 }}
+              variant={isMobile ? 'scrollable' : 'standard'}
+              scrollButtons={isMobile ? 'auto' : false}
+              allowScrollButtonsMobile
             >
               <Tab
                 icon={<AssessmentIcon />}
